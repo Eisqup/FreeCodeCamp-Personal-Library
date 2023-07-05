@@ -8,7 +8,7 @@
 
 'use strict';
 
-module.exports = function (app) {
+module.exports = function (app, myDB) {
 
   app.route('/api/books')
     .get(function (req, res){
