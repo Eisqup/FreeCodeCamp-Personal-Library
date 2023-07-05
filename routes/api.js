@@ -8,19 +8,27 @@
 
 'use strict';
 
+const bookModel = require('../mongooDB/Model')
+
 module.exports = function (app, myDB) {
 
   app.route('/api/books')
     .get(function (req, res){
       //response will be array of book objects
       //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
-        res.send(req.body)
     })
     
     .post(function (req, res){
-      let title = req.body.title;
-        myDb.inserOne()
       //response will contain new book object including atleast _id and title
+      let title = req.body.title;
+        
+        const newBook = new bookModel({title:title})
+        
+        myDB.insertOne(newBook)
+            .then(respone => {
+                console.log(respone)
+                res.send({_id: respone.insertedId, title:title})            
+        })
     })
     
     .delete(function(req, res){
