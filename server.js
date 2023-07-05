@@ -11,6 +11,8 @@ const runner            = require('./test-runner');
 
 const app = express();
 
+const myDB = require('./mongooDB/connectionDB')
+
 app.use('/public', express.static(process.cwd() + '/public'));
 
 app.use(cors({origin: '*'})); //USED FOR FCC TESTING PURPOSES ONLY!
@@ -19,6 +21,8 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 //Index page (static HTML)
+
+myDB( myDatabase => {
 app.route('/')
   .get(function (req, res) {
     res.sendFile(process.cwd() + '/views/index.html');
@@ -28,7 +32,7 @@ app.route('/')
 fccTestingRoutes(app);
 
 //Routing for API 
-apiRoutes(app);  
+apiRoutes(app, myDatabase);  
     
 //404 Not Found Middleware
 app.use(function(req, res, next) {
@@ -37,6 +41,7 @@ app.use(function(req, res, next) {
     .send('Not Found');
 });
 
+    })
 //Start our server and tests!
 const listener = app.listen(process.env.PORT || 3000, function () {
   console.log('Your app is listening on port ' + listener.address().port);

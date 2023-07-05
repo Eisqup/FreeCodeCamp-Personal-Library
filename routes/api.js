@@ -8,16 +8,18 @@
 
 'use strict';
 
-module.exports = function (app) {
+module.exports = function (app, myDB) {
 
   app.route('/api/books')
     .get(function (req, res){
       //response will be array of book objects
       //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
+        res.send(req.body)
     })
     
     .post(function (req, res){
       let title = req.body.title;
+        myDb.inserOne()
       //response will contain new book object including atleast _id and title
     })
     
