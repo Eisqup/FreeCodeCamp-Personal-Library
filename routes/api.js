@@ -18,12 +18,12 @@ module.exports = function(app, myDB) {
             //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
 
             myDB.find().toArray()
-  .then(response => {
-    res.json(response);
-  })
-  .catch(error => {
-    console.error('Error retrieving documents:', error);
-  });
+                .then(response => {
+                    res.json(response);
+                })
+                .catch(error => {
+                    console.error('Error find.toarray ', error);
+                });
         })
 
         .post(function(req, res) {
@@ -40,6 +40,9 @@ module.exports = function(app, myDB) {
             myDB.insertOne(newBook)
                 .then(response => {
                     res.send({ _id: response.insertedId, title: title })
+                })
+                .catch(error => {
+                    console.error('Error insertOne: ', error);
                 })
         })
 
@@ -59,8 +62,12 @@ module.exports = function(app, myDB) {
         .get(function(req, res) {
             let bookid = req.params.id;
             //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-            myDB.findOne({_id:bookid}).then(response =>{
-                res.send(response)
+            myDB.findOne({ _id: bookid }).then(response => {
+                if (!response) {
+                    res.send("no book exists")
+                } else {
+                    res.send(response)
+                }
             })
         })
 
@@ -68,20 +75,34 @@ module.exports = function(app, myDB) {
             let bookid = req.params.id;
             let comment = req.body.comment;
             //json res format same as .get
-            myDB.findOneAndUpdate({_id:bookid},
-                                  { $push:{comments:comment},$inc: { commentcount: 1 }},
-                                { returnDocument: "after"})
-                .then(response=>{
-                res.send(response.value)
-            })
-            
+            if (!comment) {
+                res.send("missing required field comment")
+                return
+            }
+            myDB.findOneAndUpdate({ _id: bookid },
+                { $push: { comments: comment }, $inc: { commentcount: 1 } },
+                { returnDocument: "after", projection: { commentcount: 0 } })
+                .then(response => {
+                    if (!response.value) {
+                        res.send("no book exists")
+                    } else {
+                        res.send(response.value)
+                    }
+                })
+                .catch(error => {
+                    console.error('Error updating document:', error);
+                    res.status(500).send('Error updating document');
+                });
+
         })
 
         .delete(function(req, res) {
             let bookid = req.params.id;
             //if successful response will be 'delete successful'
-            myDB.deleteOne({_id:bookid}).then(response => {
-                if (response.deletedCount = 1) {
+            myDB.deleteOne({ _id: bookid }).then(response => {
+                if (response.deletedCount === 0) {
+                    res.send("no book exists")
+                } else {
                     res.send("delete successful")
                 }
 
