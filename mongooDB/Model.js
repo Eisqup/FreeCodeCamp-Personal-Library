@@ -5,9 +5,7 @@ const BookShema = new Schema({
     _id: { type: String, required: true },
     title: { type: String, required: true },
     comments: { type:[], required: true },
-    commentcount: {type:Number, default: function () {
-      return this.comments.length;
-    }}
+    commentcount: {type:Number, default:0}
 });
 
 const BookModel = mongoose.model('Book', BookShema);

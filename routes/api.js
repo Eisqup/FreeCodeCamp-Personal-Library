@@ -16,13 +16,14 @@ module.exports = function(app, myDB) {
         .get(function(req, res) {
             //response will be array of book objects
             //json res format: [{"_id": bookid, "title": book_title, "commentcount": num_of_comments },...]
-            myDB.find({}).toArray(function(err, documents) {
-                if (err) {
-                    console.error('Error retrieving documents:', err);
-                    return;
-                }
-                res.send(documents)
-            })
+
+            myDB.find().toArray()
+  .then(response => {
+    res.json(response);
+  })
+  .catch(error => {
+    console.error('Error retrieving documents:', error);
+  });
         })
 
         .post(function(req, res) {
@@ -58,8 +59,8 @@ module.exports = function(app, myDB) {
         .get(function(req, res) {
             let bookid = req.params.id;
             //json res format: {"_id": bookid, "title": book_title, "comments": [comment,comment,...]}
-            myDB.find({_id:bookid}).then(response =>{
-                rs.send(response)
+            myDB.findOne({_id:bookid}).then(response =>{
+                res.send(response)
             })
         })
 
@@ -68,9 +69,10 @@ module.exports = function(app, myDB) {
             let comment = req.body.comment;
             //json res format same as .get
             myDB.findOneAndUpdate({_id:bookid},
-                                  { $push:{comments:comment}, returnNewDocument : true})
+                                  { $push:{comments:comment},$inc: { commentcount: 1 }},
+                                { returnDocument: "after"})
                 .then(response=>{
-                res.send(response)
+                res.send(response.value)
             })
             
         })
@@ -78,7 +80,7 @@ module.exports = function(app, myDB) {
         .delete(function(req, res) {
             let bookid = req.params.id;
             //if successful response will be 'delete successful'
-            myDB.delete({_id:bookid}).then(response => {
+            myDB.deleteOne({_id:bookid}).then(response => {
                 if (response.deletedCount = 1) {
                     res.send("delete successful")
                 }
