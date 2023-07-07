@@ -34,7 +34,6 @@ module.exports = function(app, myDB) {
                 res.send("missing required field title")
                 return
             }
-
             const newBook = new bookModel({ title: title })
 
             myDB.insertOne(newBook)
